@@ -251,6 +251,54 @@ class TracedReferenceTest : BehaviorSpec({
                 (vars.getValue(1) as TracedReferenceValue).isInitialized shouldBe Value.MAYBE
             }
         }
+
+        When("Calling the super constructor") {
+            val clazz = buildClass()
+            val method1 = clazz.addAndReturnMethod(AccessConstants.PUBLIC, "<init>", "()V", 50) {
+                it
+                    .aload_0()
+                    .invokespecial("java/lang/Object", "<init>", "()V")
+                    .return_()
+            }
+
+            val method2 = clazz.addAndReturnMethod(AccessConstants.PUBLIC, "<init>", "(I)V", 50) {
+                val left = it.createLabel()
+                val right = it.createLabel()
+                it
+                    .iload_1()
+                    .ifeq(left)
+                    .aload_0()
+                    .invokespecial("java/lang/Object", "<init>", "()V")
+                    .goto_(right)
+                    .label(left)
+                    .aload_0()
+                    .invokespecial(clazz.programClass, method1)
+                    .label(right)
+                    .return_()
+            }
+
+            evaluate(clazz.programClass, method2, partialEvaluator)
+
+            Then("Reading the reference before it is initialized") {
+                val vars = partialEvaluator.getVariablesAfter(4)
+                (vars.getValue(0) as TracedReferenceValue).isInitialized shouldBe Value.NEVER
+            }
+
+            Then("Reading the reference before it is initialized") {
+                val vars = partialEvaluator.getVariablesAfter(11)
+                (vars.getValue(0) as TracedReferenceValue).isInitialized shouldBe Value.NEVER
+            }
+
+            Then("Reading the reference after it is initialized") {
+                val vars = partialEvaluator.getVariablesAfter(5)
+                (vars.getValue(0) as TracedReferenceValue).isInitialized shouldBe Value.ALWAYS
+            }
+
+            Then("Reading the reference after it is initialized") {
+                val vars = partialEvaluator.getVariablesAfter(12)
+                (vars.getValue(0) as TracedReferenceValue).isInitialized shouldBe Value.ALWAYS
+            }
+        }
     }
 })
 
