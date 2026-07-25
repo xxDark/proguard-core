@@ -25,6 +25,7 @@ import static proguard.classfile.util.kotlin.KotlinMetadataInitializer.metadataT
 import java.io.DataInput;
 import java.util.ArrayList;
 import java.util.List;
+import proguard.classfile.AccessConstants;
 import proguard.classfile.Clazz;
 import proguard.classfile.LibraryClass;
 import proguard.classfile.LibraryField;
@@ -249,6 +250,24 @@ public class LibraryClassReader implements ClassVisitor, MemberVisitor, Constant
     libraryMethod.u2accessFlags = dataInput.readUnsignedShort();
     libraryMethod.name = getString(dataInput.readUnsignedShort());
     libraryMethod.descriptor = getString(dataInput.readUnsignedShort());
+
+    final int polymorphicAccessFlags = AccessConstants.VARARGS | AccessConstants.NATIVE;
+    if ((libraryMethod.u2accessFlags & polymorphicAccessFlags) != polymorphicAccessFlags) {
+      skipMemberAttributes();
+      return;
+    }
+    if (!libraryMethod.descriptor.startsWith("([Ljava/lang/Object;)")) {
+      skipMemberAttributes();
+      return;
+    }
+    String className = libraryClass.getName();
+    libraryMethod.hasPolymorphicSignature =
+        "java/lang/invoke/MethodHandle".equals(className)
+            || "java/lang/invoke/VarHandle".equals(className);
+    if (libraryMethod.hasPolymorphicSignature) {
+      skipMemberAttributes();
+      return;
+    }
 
     for (int attributeCount = dataInput.readUnsignedShort(); attributeCount-- != 0; ) {
       int u2attributeNameIndex = dataInput.readUnsignedShort();
