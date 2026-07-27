@@ -22,6 +22,10 @@
 - Add `reset` method to `MemberRemover`.
 - Add processing flags helper methods to `Processable`.
 
+### Improved
+
+- Improve performance of generalization steps in partial evaluation.
+
 ## Version 9.3.2 
 
 ### Upgrade consideration 

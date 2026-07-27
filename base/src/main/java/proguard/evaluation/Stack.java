@@ -113,17 +113,21 @@ public class Stack {
     // Generalize the stack values.
     for (int index = 0; index < currentSize; index++) {
       Value thisValue = this.values[index];
+      Value otherValue = other.values[index];
+
+      // Identical values (or two empty slots) generalize to themselves.
+      if (thisValue == otherValue) {
+        continue;
+      }
 
       if (thisValue != null) {
         Value newValue = null;
-
-        Value otherValue = other.values[index];
 
         if (otherValue != null) {
           newValue = thisValue.generalize(otherValue);
         }
 
-        changed = changed || !thisValue.equals(newValue);
+        changed = changed || (newValue != thisValue && !thisValue.equals(newValue));
 
         values[index] = newValue;
       }

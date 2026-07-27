@@ -111,6 +111,11 @@ public class Variables {
       Value thisValue = this.values[index];
       Value otherValue = other.values[index];
 
+      // Identical values (or two empty slots) generalize to themselves.
+      if (thisValue == otherValue) {
+        continue;
+      }
+
       // Occasionally, two values of different types might be present
       // in the same variable in a variable frame (corresponding to
       // two local variables that share the same index), at some point
@@ -121,7 +126,7 @@ public class Variables {
           && thisValue.computationalType() == otherValue.computationalType()) {
         Value newValue = thisValue.generalize(otherValue);
 
-        changed = changed || !thisValue.equals(newValue);
+        changed = changed || (newValue != thisValue && !thisValue.equals(newValue));
 
         this.values[index] = newValue;
       } else {
