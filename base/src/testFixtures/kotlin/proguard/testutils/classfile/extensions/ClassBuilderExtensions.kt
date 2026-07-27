@@ -13,6 +13,8 @@ import proguard.classfile.editor.CompactCodeAttributeComposer
 import proguard.classfile.util.ClassUtil
 import java.util.*
 
+fun <T> buildInterface(name: String, op: ClassBuilder.() -> T) = buildClass(name, accessFlags = AccessConstants.ABSTRACT and AccessConstants.INTERFACE, op = op)
+
 fun buildDataClass(
     name: String = makeClassName(),
     superName: String = ClassConstants.NAME_JAVA_LANG_OBJECT,

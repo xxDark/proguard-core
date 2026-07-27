@@ -25,6 +25,7 @@ import proguard.classfile.attribute.EnclosingMethodAttribute
 import proguard.classfile.attribute.SignatureAttribute
 import proguard.classfile.attribute.visitor.AllAttributeVisitor
 import proguard.classfile.attribute.visitor.AttributeVisitor
+import proguard.classfile.constant.InterfaceMethodrefConstant
 import proguard.classfile.editor.AttributesEditor
 import proguard.classfile.editor.ClassBuilder
 import proguard.classfile.editor.ConstantPoolEditor
@@ -1176,6 +1177,40 @@ class ClassReferenceInitializerTest : BehaviorSpec({
                         it.referencedClass shouldBe programClassPool.getClass("OuterClass\$InnerEnum")
                     },
                 )
+            }
+        }
+    }
+
+    Given("A diamond shaped hierarchy with a default implementation") {
+        val (programClassPool, _) = ClassPoolBuilder.fromSource(
+            KotlinSource(
+                "Test.kt",
+                """
+          interface Api {
+              val value: Int
+          }
+          
+          interface DefaultApi : Api {
+              override val value: Int get() = 42
+          }
+          
+          interface Diamond : Api, DefaultApi
+         
+          class SampleA : Diamond
+                """.trimIndent(),
+            ),
+        )
+
+        When("Initializing the references") {
+            programClassPool.classesAccept(ClassReferenceInitializer(programClassPool, ClassPool()))
+
+            Then("SampleA's method invoke constant should refer to the default implementation") {
+                val sampleA = programClassPool.getClass("SampleA") as ProgramClass
+                val methodRef = sampleA.constantPool.filterIsInstance<InterfaceMethodrefConstant>().single()
+
+                methodRef shouldNotBe null
+                methodRef.referencedMethod shouldNotBe null
+                methodRef.referencedMethod.accessFlags and AccessConstants.ABSTRACT shouldBe 0
             }
         }
     }
