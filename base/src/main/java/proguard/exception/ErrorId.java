@@ -53,7 +53,7 @@ public final class ErrorId {
 
   // Proguard Util Exceptions
   public static final int WILDCARD_WRONG_INDEX = 8_000;
-  public static final int MEMBER_FINDER_ILLEGAL_CONFIGURATION = 8_0001;
+  public static final int MEMBER_FINDER_ILLEGAL_CONFIGURATION = 8_001;
 
   /**
    * Group of errors.
