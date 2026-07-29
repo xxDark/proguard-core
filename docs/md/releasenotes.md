@@ -5,7 +5,6 @@
 - Fix reference initialization for type aliases defined in file facades with a custom JvmPackageName.
 - Fix PKCS7OutputStream incorrectly handling escaped quotes certificates.
 - Fix ReferenceTracingInvocationUnit treating the current reference inside constructors as initialized prior to the invocation of the super or object initializer.
-- Fix incorrect method reference initialization in hierarchies where a concrete class implements both abstract-method interfaces and default-method interfaces.
 
 ### Kotlin support
 

@@ -19,8 +19,6 @@ package proguard.classfile.util;
 
 import proguard.classfile.*;
 import proguard.classfile.visitor.*;
-import proguard.exception.ErrorId;
-import proguard.exception.ProguardCoreException;
 
 /**
  * This utility class provides methods to find class members in a given class or in its hierarchy.
@@ -33,7 +31,6 @@ public class MemberFinder implements MemberVisitor {
   private static final MemberFoundException MEMBER_FOUND = new MemberFoundException();
 
   private final boolean searchHierarchy;
-  private final boolean continueOnAbstract;
 
   private Clazz clazz;
   private Member member;
@@ -45,22 +42,7 @@ public class MemberFinder implements MemberVisitor {
 
   /** Creates a new MemberFinder that looks in the class hierarchy if specified. */
   public MemberFinder(boolean searchHierarchy) {
-    this(searchHierarchy, false);
-  }
-
-  /**
-   * Creates a new MemberFinder that looks in the class hierarchy if specified and keeps searching
-   * until a non-abstract hit was found, if specified. The resulting member may still be abstract if
-   * no concrete results were found.
-   */
-  public MemberFinder(boolean searchHierarchy, boolean continueOnAbstract) {
-    if (continueOnAbstract && !searchHierarchy) {
-      throw new ProguardCoreException(
-          ErrorId.MEMBER_FINDER_ILLEGAL_CONFIGURATION,
-          "Continuing on abstract members without traveling the class hierarchy is not sensible.");
-    }
     this.searchHierarchy = searchHierarchy;
-    this.continueOnAbstract = continueOnAbstract;
   }
 
   /**
@@ -149,7 +131,6 @@ public class MemberFinder implements MemberVisitor {
       // We've found the member we were looking for.
     }
 
-    // Might have been found in non-throwing way.
     return member;
   }
 
@@ -231,16 +212,5 @@ public class MemberFinder implements MemberVisitor {
     this.member = member;
 
     throw MEMBER_FOUND;
-  }
-
-  @Override
-  public void visitProgramMethod(ProgramClass programClass, ProgramMethod programMethod) {
-    this.clazz = programClass;
-    this.member = programMethod;
-
-    // If the found method is ABSTRACT, we might need to keep looking for a default.
-    if (((programMethod.u2accessFlags & AccessConstants.ABSTRACT) == 0) || !continueOnAbstract) {
-      throw MEMBER_FOUND;
-    }
   }
 }

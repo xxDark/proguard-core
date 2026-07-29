@@ -157,7 +157,7 @@ public class ClassReferenceInitializer
   private final ClassPool libraryClassPool;
   private final boolean checkAccessRules;
   private final InvalidReferenceVisitor invalidReferenceVisitor;
-  private final MemberFinder memberFinder = new MemberFinder(true, true);
+  private final MemberFinder memberFinder = new MemberFinder();
   private final MemberFinder strictMemberFinder = new MemberFinder(false);
 
   private final KotlinReferenceInitializer kotlinReferenceInitializer;
