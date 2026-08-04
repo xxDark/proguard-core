@@ -44,4 +44,5 @@ public class JavaTypeConstants {
   public static final char METHOD_ARGUMENTS_OPEN = '(';
   public static final char METHOD_ARGUMENTS_CLOSE = ')';
   public static final char METHOD_ARGUMENTS_SEPARATOR = ',';
+  public static final String ANY_ARGUMENTS_KEYWORD = "...";
 }

@@ -118,6 +118,16 @@ class ClassUtilTest : BehaviorSpec({
         }
     }
 
+    Given("An internal type with spaces") {
+        val someType = "Lcom/example/Sample Class;"
+        Then("Converting it to an external type with quoted true should add quotes") {
+            ClassUtil.externalType(someType, true) shouldBe "'com.example.Sample Class'"
+        }
+        Then("Converting it to an external type with quoted false should not add quotes") {
+            ClassUtil.externalType(someType, false) shouldBe "com.example.Sample Class"
+        }
+    }
+
     Given("An external class name") {
         val someClassName = "java.lang.reflect.Constructor"
         Then("Converting it to an internal class name should replace the package separators") {
@@ -129,6 +139,16 @@ class ClassUtilTest : BehaviorSpec({
         val someClassName = "java/lang/reflect/Constructor"
         Then("Converting it to an external class name should replace the package separators") {
             ClassUtil.externalClassName(someClassName) shouldBe "java.lang.reflect.Constructor"
+        }
+    }
+
+    Given("An internal class name with spaces") {
+        val someClassName = "com/example/Sample Class"
+        Then("Converting it to an external class name with quoted true should add quotes") {
+            ClassUtil.externalClassName(someClassName, true) shouldBe "'com.example.Sample Class'"
+        }
+        Then("Converting it to an external class name with quoted false should not add quotes") {
+            ClassUtil.externalClassName(someClassName, false) shouldBe "com.example.Sample Class"
         }
     }
 
@@ -163,6 +183,79 @@ class ClassUtilTest : BehaviorSpec({
             ClassUtil.internalTypeFromClassName(JavaTypeConstants.FLOAT) shouldBe TypeConstants.FLOAT.toString()
             ClassUtil.internalTypeFromClassName(JavaTypeConstants.LONG) shouldBe TypeConstants.LONG.toString()
             ClassUtil.internalTypeFromClassName(JavaTypeConstants.DOUBLE) shouldBe TypeConstants.DOUBLE.toString()
+        }
+    }
+    Given("An unquoted identifier") {
+        val identifier = "method name"
+        Then("It should be quoted") {
+            ClassUtil.quotedIdentifier(identifier) shouldBe "'method name'"
+        }
+    }
+    Given("An unquoted identifier containing escape chars") {
+        val identifier = "method \\name"
+        Then("It should be escaped when quoted") {
+            ClassUtil.quotedIdentifier(identifier) shouldBe "'method \\\\name'"
+        }
+    }
+    Given("An identifier containing quotes") {
+        val identifier = "met'hod name"
+        val identifier2 = "'method' name"
+        val identifier3 = "method name'"
+        val identifier4 = "'method name'"
+        Then("It should be escaped when quoted") {
+            ClassUtil.quotedIdentifier(identifier) shouldBe "'met\\'hod name'"
+            ClassUtil.quotedIdentifier(identifier2) shouldBe "'\\'method\\' name'"
+            ClassUtil.quotedIdentifier(identifier3) shouldBe "'method name\\''"
+            ClassUtil.quotedIdentifier(identifier4) shouldBe "'\\'method name\\''"
+        }
+    }
+
+    Given("An internal field description") {
+        val internalFieldName = "my field"
+        val internalFieldDesc = "Lcom/sample/Some Class;"
+        Then("Converting it to an external description with quoted false should not add quotes") {
+            ClassUtil.externalFullFieldDescription(PUBLIC, internalFieldName, internalFieldDesc, false) shouldBe "public com.sample.Some Class my field"
+        }
+        Then("Converting it to an external description with quoted true should add quotes") {
+            ClassUtil.externalFullFieldDescription(PUBLIC, internalFieldName, internalFieldDesc, true) shouldBe "public 'com.sample.Some Class' 'my field'"
+        }
+    }
+
+    Given("An internal method descriptor") {
+        val internalClassName = "Lcom/sample/Some Class;"
+        val internalMethodName = "my method"
+        val internalMethodDescriptor = "(Lcom/sample/Some Type;I)Lcom/sample/Other Type;"
+        Then("Converting it to an external description with quoted false should not add quotes") {
+            ClassUtil.externalFullMethodDescription(internalClassName, PUBLIC, internalMethodName, internalMethodDescriptor, false) shouldBe "public com.sample.Other Type my method(com.sample.Some Type,int)"
+        }
+        Then("Converting it to an external description with quoted true should add quotes") {
+            ClassUtil.externalFullMethodDescription(internalClassName, PUBLIC, internalMethodName, internalMethodDescriptor, true) shouldBe "public 'com.sample.Other Type' 'my method'('com.sample.Some Type',int)"
+        }
+    }
+
+    Given("An internal method arguments descriptor") {
+        val internalMethodDescriptor = "(Lcom/sample/Some Type;Ljava/lang/String;)V"
+        Then("Converting it to an external method arguments description with quoted false should not add quotes") {
+            ClassUtil.externalMethodArguments(internalMethodDescriptor, false) shouldBe "com.sample.Some Type,java.lang.String"
+        }
+        Then("Converting it to an external method arguments description with quoted true should add quotes") {
+            ClassUtil.externalMethodArguments(internalMethodDescriptor, true) shouldBe "'com.sample.Some Type',java.lang.String"
+        }
+    }
+
+    Given("An empty internal method arguments descriptor") {
+        val internalMethodDescriptor = "()V"
+        Then("Converting it to an external method arguments description should return empty") {
+            ClassUtil.externalMethodArguments(internalMethodDescriptor, false) shouldBe ""
+            ClassUtil.externalMethodArguments(internalMethodDescriptor, true) shouldBe ""
+        }
+    }
+
+    Given("An any-arguments internal method arguments descriptor") {
+        val internalMethodDescriptor = "(...)V"
+        Then("Converting it to an external method arguments description should return any-arguments") {
+            ClassUtil.externalMethodArguments(internalMethodDescriptor, false) shouldBe "..."
+            ClassUtil.externalMethodArguments(internalMethodDescriptor, true) shouldBe "..."
         }
     }
 })

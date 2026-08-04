@@ -21,6 +21,7 @@ import static proguard.classfile.AccessConstants.FINAL;
 import static proguard.classfile.TypeConstants.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import proguard.classfile.AccessConstants;
 import proguard.classfile.ClassConstants;
 import proguard.classfile.Clazz;
@@ -28,6 +29,8 @@ import proguard.classfile.JavaAccessConstants;
 import proguard.classfile.JavaTypeConstants;
 import proguard.classfile.JavaVersionConstants;
 import proguard.classfile.VersionConstants;
+import proguard.classfile.attribute.signature.SignatureParser;
+import proguard.classfile.attribute.signature.ast.signature.MethodSignatureNode;
 import proguard.evaluation.value.Value;
 
 /**
@@ -290,14 +293,24 @@ public class ClassUtil {
    * Converts an internal class name into an external class name.
    *
    * @param internalClassName the internal class name, e.g. "<code>java/lang/Object</code>".
+   * @param quoted whether the result should be quoted; should be set to true if it is going to be
+   *     parsed as configuration later. Uses {@link ClassUtil#quotedIdentifier(String)} for quoting.
+   * @return the external class name, e.g. "<code>java.lang.Object</code>".
+   */
+  public static String externalClassName(String internalClassName, boolean quoted) {
+    String external =
+        internalClassName.replace(PACKAGE_SEPARATOR, JavaTypeConstants.PACKAGE_SEPARATOR);
+    return quoted ? quotedIdentifier(external) : external;
+  }
+
+  /**
+   * Converts an internal class name into an external class name.
+   *
+   * @param internalClassName the internal class name, e.g. "<code>java/lang/Object</code>".
    * @return the external class name, e.g. "<code>java.lang.Object</code>".
    */
   public static String externalClassName(String internalClassName) {
-    return // internalClassName.startsWith(ClassConstants.PACKAGE_JAVA_LANG) &&
-    // internalClassName.indexOf(TypeConstants.PACKAGE_SEPARATOR,
-    // ClassConstants.PACKAGE_JAVA_LANG.length() + 1) < 0 ?
-    // internalClassName.substring(ClassConstants.PACKAGE_JAVA_LANG.length()) :
-    internalClassName.replace(PACKAGE_SEPARATOR, JavaTypeConstants.PACKAGE_SEPARATOR);
+    return externalClassName(internalClassName, false);
   }
 
   /**
@@ -1201,11 +1214,13 @@ public class ClassUtil {
    *
    * @param internalType the internal type, e.g. "<code>Ljava/lang/Object;</code>" or "<code>
    *     [[Ljava/lang/Object;</code>" or "<code>[I</code>".
+   * @param quoted whether the result should be quoted; should be set to true if it is going to be
+   *     parsed as configuration later. Uses {@link ClassUtil#quotedIdentifier(String)} for quoting.
    * @return the external type, e.g. "<code>java.lang.Object</code>" or "<code>java.lang.Object[][]
    *     </code>" or "<code>int[]</code>".
    * @throws IllegalArgumentException if the type is invalid.
    */
-  public static String externalType(String internalType) {
+  public static String externalType(String internalType, boolean quoted) {
     if (internalType == null) {
       throw new IllegalArgumentException("Invalid type, null string");
     } else if (internalType.length() == 0) {
@@ -1273,7 +1288,20 @@ public class ClassUtil {
       externalType += JavaTypeConstants.ARRAY;
     }
 
-    return externalType;
+    return quoted ? quotedIdentifier(externalType) : externalType;
+  }
+
+  /**
+   * Converts an internal type into an external type.
+   *
+   * @param internalType the internal type, e.g. "<code>Ljava/lang/Object;</code>" or "<code>
+   *     [[Ljava/lang/Object;</code>" or "<code>[I</code>".
+   * @return the external type, e.g. "<code>java.lang.Object</code>" or "<code>java.lang.Object[][]
+   *     </code>" or "<code>int[]</code>".
+   * @throws IllegalArgumentException if the type is invalid.
+   */
+  public static String externalType(String internalType) {
+    return externalType(internalType, false);
   }
 
   /**
@@ -1405,14 +1433,52 @@ public class ClassUtil {
    * @param accessFlags the access flags of the field.
    * @param fieldName the field name, e.g. "<code>myField</code>".
    * @param internalFieldDescriptor the internal field descriptor, e.g. "<code>Z</code>".
+   * @param quoted whether the identifiers should be quoted; should be set to true if it is going to
+   *     be parsed as configuration later. Uses {@link ClassUtil#quotedIdentifier(String)} for
+   *     quoting.
    * @return the external full field description, e.g. "<code>public boolean myField</code>".
    */
   public static String externalFullFieldDescription(
-      int accessFlags, String fieldName, String internalFieldDescriptor) {
+      int accessFlags, String fieldName, String internalFieldDescriptor, boolean quoted) {
+    String descriptor = externalType(internalFieldDescriptor);
     return externalFieldAccessFlags(accessFlags)
-        + externalType(internalFieldDescriptor)
+        + (quoted ? quotedIdentifier(descriptor) : descriptor)
         + ' '
-        + fieldName;
+        + (quoted ? quotedIdentifier(fieldName) : fieldName);
+  }
+
+  public static String externalFullFieldDescription(
+      int accessFlags, String fieldName, String internalFieldDescriptor) {
+    return externalFullFieldDescription(accessFlags, fieldName, internalFieldDescriptor, false);
+  }
+
+  /**
+   * Converts an internal method description into an external full method description.
+   *
+   * @param internalClassName the internal name of the class of the method, e.g. "<code>
+   *     mypackage/MyClass</code>".
+   * @param accessFlags the access flags of the method.
+   * @param internalMethodName the internal method name, e.g. "<code>myMethod</code>" or "<code>
+   *     &lt;init&gt;</code>".
+   * @param internalMethodDescriptor the internal method descriptor, e.g. "<code>(II)Z</code>".
+   * @param quoted whether the types and names should be quoted; should be set to true if it is
+   *     going to be parsed as configuration later. Uses {@link ClassUtil#quotedIdentifier(String)}
+   *     for quoting.
+   * @return the external full method description, e.g. "<code>public boolean myMethod(int,int)
+   *     </code>" or "<code>public MyClass(int,int)</code>".
+   */
+  public static String externalFullMethodDescription(
+      String internalClassName,
+      int accessFlags,
+      String internalMethodName,
+      String internalMethodDescriptor,
+      boolean quoted) {
+    return externalMethodAccessFlags(accessFlags)
+        + externalMethodReturnTypeAndName(
+            internalClassName, internalMethodName, internalMethodDescriptor, quoted)
+        + JavaTypeConstants.METHOD_ARGUMENTS_OPEN
+        + externalMethodArguments(internalMethodDescriptor, quoted)
+        + JavaTypeConstants.METHOD_ARGUMENTS_CLOSE;
   }
 
   /**
@@ -1432,12 +1498,8 @@ public class ClassUtil {
       int accessFlags,
       String internalMethodName,
       String internalMethodDescriptor) {
-    return externalMethodAccessFlags(accessFlags)
-        + externalMethodReturnTypeAndName(
-            internalClassName, internalMethodName, internalMethodDescriptor)
-        + JavaTypeConstants.METHOD_ARGUMENTS_OPEN
-        + externalMethodArguments(internalMethodDescriptor)
-        + JavaTypeConstants.METHOD_ARGUMENTS_CLOSE;
+    return externalFullMethodDescription(
+        internalClassName, accessFlags, internalMethodName, internalMethodDescriptor, false);
   }
 
   /**
@@ -1818,14 +1880,49 @@ public class ClassUtil {
    * @param internalMethodName the internal method name, e.g. "<code>myMethod</code>" or "<code>
    *     &lt;init&gt;</code>".
    * @param internalMethodDescriptor the internal method descriptor, e.g. "<code>(II)Z</code>".
+   * @param quoted whether identifiers should be quoted; should be set to true if it is going to be
+   *     parsed as configuration later. Uses {@link ClassUtil#quotedIdentifier(String)} for quoting.
    * @return the external method return type and name, e.g. "<code>boolean myMethod</code>" or "
    *     <code>MyClass</code>".
    */
   private static String externalMethodReturnTypeAndName(
-      String internalClassName, String internalMethodName, String internalMethodDescriptor) {
-    return internalMethodName.equals(ClassConstants.METHOD_NAME_INIT)
-        ? externalShortClassName(externalClassName(internalClassName))
-        : (externalMethodReturnType(internalMethodDescriptor) + ' ' + internalMethodName);
+      String internalClassName,
+      String internalMethodName,
+      String internalMethodDescriptor,
+      boolean quoted) {
+    String returnType = externalMethodReturnType(internalMethodDescriptor);
+
+    if (internalMethodName.equals(ClassConstants.METHOD_NAME_INIT)) {
+      return externalShortClassName(externalClassName(internalClassName));
+    } else {
+      return quoted
+          ? quotedIdentifier(returnType) + ' ' + quotedIdentifier(internalMethodName)
+          : returnType + ' ' + internalMethodName;
+    }
+  }
+
+  /**
+   * Converts an internal method descriptor into an external method argument description.
+   *
+   * @param internalMethodDescriptor the internal method descriptor, e.g. "<code>(II)Z</code>".
+   * @param quoted whether result should be quoted; should be set to true if it is going to be
+   *     parsed as configuration later. Uses {@link ClassUtil#quotedIdentifier(String)} for quoting.
+   * @return the external method argument description, e.g. "<code>int,int</code>".
+   */
+  public static String externalMethodArguments(String internalMethodDescriptor, boolean quoted) {
+    MethodSignatureNode methodSignatureNode =
+        new SignatureParser().parseMethodSignature(internalMethodDescriptor);
+    if (methodSignatureNode == null) {
+      return JavaTypeConstants.ANY_ARGUMENTS_KEYWORD;
+    }
+    String separator = String.valueOf(JavaTypeConstants.METHOD_ARGUMENTS_SEPARATOR);
+    return methodSignatureNode.getArgumentTypes().stream()
+        .map(
+            type -> {
+              String external = externalType(type.toString());
+              return quoted ? quotedIdentifier(external) : external;
+            })
+        .collect(Collectors.joining(separator));
   }
 
   /**
@@ -1835,19 +1932,7 @@ public class ClassUtil {
    * @return the external method argument description, e.g. "<code>int,int</code>".
    */
   public static String externalMethodArguments(String internalMethodDescriptor) {
-    StringBuilder externalMethodNameAndArguments = new StringBuilder();
-
-    InternalTypeEnumeration internalTypeEnumeration =
-        new InternalTypeEnumeration(internalMethodDescriptor);
-
-    while (internalTypeEnumeration.hasMoreTypes()) {
-      externalMethodNameAndArguments.append(externalType(internalTypeEnumeration.nextType()));
-      if (internalTypeEnumeration.hasMoreTypes()) {
-        externalMethodNameAndArguments.append(JavaTypeConstants.METHOD_ARGUMENTS_SEPARATOR);
-      }
-    }
-
-    return externalMethodNameAndArguments.toString();
+    return externalMethodArguments(internalMethodDescriptor, false);
   }
 
   /**
@@ -1905,5 +1990,21 @@ public class ClassUtil {
    */
   public static boolean isExtendable(Clazz clazz) {
     return clazz == null || (clazz.getAccessFlags() & FINAL) == 0;
+  }
+
+  /**
+   * Wraps given identifier in quotes in case it's empty, or it contains space character. Quotes and
+   * backslashes in the input will be escaped.
+   *
+   * @param identifier unquoted input identifier
+   * @return quoted identifier
+   */
+  public static String quotedIdentifier(String identifier) {
+    boolean needsQuotes =
+        (identifier.isEmpty() || identifier.chars().anyMatch(Character::isSpaceChar));
+    if (!needsQuotes) {
+      return identifier;
+    }
+    return "'" + identifier.replace("\\", "\\\\").replace("'", "\\'") + "'";
   }
 }
