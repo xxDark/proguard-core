@@ -1,10 +1,4 @@
-## Version 9.3.3 
-
-### Bugfixes
-
-- Fix reference initialization for type aliases defined in file facades with a custom JvmPackageName.
-- Fix PKCS7OutputStream incorrectly handling escaped quotes certificates.
-- Fix ReferenceTracingInvocationUnit treating the current reference inside constructors as initialized prior to the invocation of the super or object initializer.
+## Version 9.4.0
 
 ### Kotlin support
 
@@ -19,15 +13,18 @@
 - `ClassUtil` supports optionally quoting identifiers with spaces when converting names, types or descriptions from internal to external.
 - Avoid changing invokespecial to invokeinterface in `MethodInvocationFixer` when a default super interface method is present.
 - Add new `InterfaceMethodReferenceFixer` that patches `MethodRefConstant`s to `InterfaceMethodRefConstant`s in visited classes when the reference is an interface method.
-
-### API changes
-
 - Add `reset` method to `MemberRemover`.
 - Add processing flags helper methods to `Processable`.
 
 ### Improved
 
 - Improve performance of generalization steps in partial evaluation.
+
+### Bugfixes
+
+- Fix reference initialization for type aliases defined in file facades with a custom JvmPackageName.
+- Fix PKCS7OutputStream incorrectly handling escaped quotes certificates.
+- Fix ReferenceTracingInvocationUnit treating the current reference inside constructors as initialized prior to the invocation of the super or object initializer.
 
 ## Version 9.3.2 
 
