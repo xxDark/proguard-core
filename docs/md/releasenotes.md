@@ -19,6 +19,7 @@
 ### Improved
 
 - Improve performance of generalization steps in partial evaluation.
+- Improve `CallGraph` to store incoming and outgoing calls in a deterministic order.
 
 ### Bugfixes
 

@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,7 +67,7 @@ public class CallGraph {
 
   /**
    * Provides concurrency ready {@link CallGraph}, backed by {@link ConcurrentHashMap}s and by
-   * {@link Collections#synchronizedSet(Set) synchronizedSet}s. Not needed without multithreading.
+   * {@link ConcurrentSkipListSet}s. Not needed without multithreading.
    */
   public static CallGraph concurrentCallGraph() {
     return new CallGraph(new ConcurrentHashMap<>(), new ConcurrentHashMap<>(), true);
@@ -94,7 +94,7 @@ public class CallGraph {
   }
 
   private Set<Call> newCallSet() {
-    return concurrent ? Collections.synchronizedSet(new LinkedHashSet<>()) : new LinkedHashSet<>();
+    return concurrent ? new ConcurrentSkipListSet<>() : new LinkedHashSet<>();
   }
 
   /** Clear the call graph references. */
