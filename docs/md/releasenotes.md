@@ -16,6 +16,7 @@
 - Add `reset` method to `MemberRemover`.
 - Add processing flags helper methods to `Processable`.
 - Add `isLeader` and `isFallThrough` methods to the `BranchTargetFinder`. These methods can be used to determine if an offset is the leader of a basic block or the fallthrough of a conditional branch respectively.
+- Deprecate methods of `CallGraphWalker` using a default depth and width.
 
 ### Improved
 
