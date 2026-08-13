@@ -281,6 +281,7 @@ public class CallGraphWalker {
     worklist.add(root);
     int currLevel = 0;
     while (!worklist.isEmpty()) {
+      Metrics.setIfMax(MetricType.CALLGRAPHWALKER_MAX_DEPTH, currLevel);
       if (currLevel >= maxDepth) {
         Metrics.increaseCount(MetricType.CALL_GRAPH_RECONSTRUCTION_MAX_DEPTH_REACHED);
         worklist.forEach(n -> n.isTruncated = true);
@@ -323,6 +324,7 @@ public class CallGraphWalker {
       }
 
       for (Node next : getNext.apply(callGraph, curr)) {
+        Metrics.setIfMax(MetricType.CALLGRAPHWALKER_MAX_WIDTH, nextLevel.size());
         if (nextLevel.size() >= maxWidth) {
           Metrics.increaseCount(MetricType.CALL_GRAPH_RECONSTRUCTION_MAX_WIDTH_REACHED);
           next.isTruncated = true;
