@@ -1,5 +1,9 @@
 ## Version 9.4.0
 
+### Java support 
+
+- Support Java 27.
+
 ### Kotlin support
 
 - Add support for inner classes and inner enums used as annotations argument in Kotlin metadata.
