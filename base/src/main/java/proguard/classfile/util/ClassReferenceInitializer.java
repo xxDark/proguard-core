@@ -764,9 +764,11 @@ public class ClassReferenceInitializer
       }
 
       kotlinClassKindMetadata.enumEntries.forEach(
-          enumEntry ->
-              enumEntry.referencedEnumEntry =
-                  strictMemberFinder.findField(clazz, enumEntry.name, null));
+          enumEntry -> {
+            enumEntry.referencedEnumEntry =
+                strictMemberFinder.findField(clazz, enumEntry.name, null);
+            enumEntry.annotationsAccept(clazz, this);
+          });
 
       kotlinClassKindMetadata.referencedNestedClasses =
           kotlinClassKindMetadata.nestedClassNames.stream()
