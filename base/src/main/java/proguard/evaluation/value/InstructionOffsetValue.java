@@ -199,6 +199,11 @@ public class InstructionOffsetValue extends Category1Value {
    * at the end of the list, in the same order.
    */
   public final InstructionOffsetValue generalize(InstructionOffsetValue other) {
+    // If the values are identical, we can return either one.
+    if (this == other) {
+      return this;
+    }
+
     // If the values array of either is empty, we can return the other one.
     int[] thisValues = this.values;
     if (thisValues.length == 0) {

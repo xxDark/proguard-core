@@ -8,6 +8,7 @@ kotlin = "2.4.0"
 kotlinx-cli = "0.3.6"
 log4j = "2.26.1"
 mockk = "1.13.13"
+nexus = "2.0.0"
 r8 = "3.3.75"
 spotless = "6.18.0"
 smali = "2.5.2"
@@ -43,7 +44,7 @@ kotlin = ["kotlin-stdlib", "kotlin-reflect"]
 [plugins]
 aggregate-javadoc = { id = "io.freefair.aggregate-javadoc", version.ref = "aggregate-javadoc" }
 kotlin-plugin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-nexus-publish = { id  = "io.github.gradle-nexus.publish-plugin" }
+nexus-publish = { id  = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqube"}
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 test-logger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }

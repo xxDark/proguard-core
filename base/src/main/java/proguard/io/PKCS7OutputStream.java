@@ -1,20 +1,3 @@
-/*
- * ProGuardCORE -- library to process Java bytecode.
- *
- * Copyright (c) 2002-2020 Guardsquare NV
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package proguard.io;
 
 import java.io.FileInputStream;
@@ -22,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateFactory;
@@ -82,33 +66,45 @@ class PKCS7OutputStream {
     0x2a, (byte) 0x86, 0x48, (byte) 0xce, 0x3d, 0x2, 0x1
   }; // 1.2.840.10045.2.1
 
+  private static final String COMMON_NAME_ATTRIBUTE = "CN";
+  private static final String COMMON_NAME_OBJECT_ID_STRING = "2.5.4.3";
   private static final byte[] COMMON_NAME_OBJECT_ID = {0x55, 0x04, 0x03}; // 2.5.4.3
+  private static final String SURNAME_ATTRIBUTE = "SN"; // Not supported by keytool.
+  private static final String SURNAME_OBJECT_ID_STRING = "2.5.4.4";
   private static final byte[] SURNAME_OBJECT_ID = {0x55, 0x04, 0x04}; // 2.5.4.4
-  private static final byte[] SERIAL_NUMBER_OBJECT_ID = {0x55, 0x04, 0x05}; // 2.5.4.5
+  private static final String COUNTRY_NAME_ATTRIBUTE = "C";
+  private static final String COUNTRY_NAME_OBJECT_ID_STRING = "2.5.4.6";
   private static final byte[] COUNTRY_NAME_OBJECT_ID = {0x55, 0x04, 0x06}; // 2.5.4.6
+  private static final String LOCALITY_NAME_ATTRIBUTE = "L";
+  private static final String LOCALITY_NAME_OBJECT_ID_STRING = "2.5.4.7";
   private static final byte[] LOCALITY_NAME_OBJECT_ID = {0x55, 0x04, 0x07}; // 2.5.4.7
+  private static final String STATE_NAME_ATTRIBUTE = "ST";
+  private static final String STATE_NAME_OBJECT_ID_STRING = "2.5.4.8";
   private static final byte[] STATE_NAME_OBJECT_ID = {0x55, 0x04, 0x08}; // 2.5.4.8
+  private static final String STREET_ADDRESS_ATTRIBUTE = "STREET";
+  private static final String STREET_ADDRESS_OBJECT_ID_STRING = "2.5.4.9";
   private static final byte[] STREET_ADDRESS_OBJECT_ID = {0x55, 0x04, 0x09}; // 2.5.4.9
+  private static final String ORGANIZATION_NAME_ATTRIBUTE = "O";
+  private static final String ORGANIZATION_NAME_OBJECT_ID_STRING = "2.5.4.10";
   private static final byte[] ORGANIZATION_NAME_OBJECT_ID = {0x55, 0x04, 0x0a}; // 2.5.4.10
+  private static final String UNIT_NAME_ATTRIBUTE = "OU";
+  private static final String UNIT_NAME_OBJECT_ID_STRING = "2.5.4.11";
   private static final byte[] UNIT_NAME_OBJECT_ID = {0x55, 0x04, 0x0b}; // 2.5.4.11
+  private static final String TITLE_ATTRIBUTE = "T";
+  private static final String TITLE_ATTRIBUTE_2 = "title";
+  private static final String TITLE_OBJECT_ID_STRING = "2.5.4.12";
   private static final byte[] TITLE_OBJECT_ID = {0x55, 0x04, 0x0c}; // 2.5.4.12
+  private static final String SERIAL_NUMBER_ATTRIBUTE = "SERIALNUMBER";
+  private static final String SERIAL_NUMBER_OBJECT_ID_STRING = "2.5.4.5";
+  private static final byte[] SERIAL_NUMBER_OBJECT_ID = {0x55, 0x04, 0x05}; // 2.5.4.5
+  private static final String GIVEN_NAME_ATTRIBUTE = "GN"; // Not supported by keytool.
+  private static final String GIVEN_NAME_OBJECT_ID_STRING = "2.5.4.42";
   private static final byte[] GIVEN_NAME_OBJECT_ID = {0x55, 0x04, 0x2a}; // 2.5.4.42
+  private static final String EMAIL_ADDRESS_ATTRIBUTE = "EMAILADDRESS";
+  private static final String EMAIL_ADDRESS_OBJECT_ID_STRING = "1.2.840.113549.1.9.1";
   private static final byte[] EMAIL_ADDRESS_OBJECT_ID = {
     0x2a, (byte) 0x86, 0x48, (byte) 0x86, (byte) 0xf7, 0xd, 0x1, 0x9, 0x1
   }; // 1.2.840.113549.1.9.1
-
-  private static final String COMMON_NAME_ATTRIBUTE = "CN";
-  private static final String SURNAME_ATTRIBUTE = "SN"; // Not supported by keytool.
-  private static final String SERIAL_NUMBER_ATTRIBUTE = "SERIALNUMBER";
-  private static final String COUNTRY_NAME_ATTRIBUTE = "C";
-  private static final String LOCALITY_NAME_ATTRIBUTE = "L";
-  private static final String STATE_NAME_ATTRIBUTE = "ST";
-  private static final String STREET_ADDRESS_ATTRIBUTE = "STREET";
-  private static final String ORGANIZATION_NAME_ATTRIBUTE = "O";
-  private static final String UNIT_NAME_ATTRIBUTE = "OU";
-  private static final String TITLE_ATTRIBUTE = "T";
-  private static final String GIVEN_NAME_ATTRIBUTE = "GN"; // Not supported by keytool.
-  private static final String EMAIL_ADDRESS_ATTRIBUTE = "EMAILADDRESS";
 
   private final DEROutputStream derOutputStream;
 
@@ -231,34 +227,74 @@ class PKCS7OutputStream {
         // in order from most significant (right-most) to least significant (left-most).
         for (Rdn rdn : ldapName.getRdns()) {
           String attributeName = rdn.getType();
-          String attributeValue = rdn.getValue().toString();
+          Object attributeValue = rdn.getValue();
+
+          // Extract the string value if a byte array was provided.
+          String attributeValueString;
+          if (attributeValue instanceof byte[]) {
+            byte[] derBytes = (byte[]) attributeValue;
+            // ASN.1 TLV structure: derBytes[0] = 0x16 (IA5String Tag), derBytes[1] = Length
+            // String value starts at index 2 for short-form lengths (<128 bytes)
+            attributeValueString =
+                new String(derBytes, 2, derBytes.length - 2, StandardCharsets.UTF_8);
+          } else {
+            attributeValueString = attributeValue.toString();
+          }
 
           // Write out the name and value.
           // Note that the email address needs to be written out as an IA5 string.
-          if (attributeName.equals(COMMON_NAME_ATTRIBUTE))
-            writeStringAttributeSingleton(COMMON_NAME_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(SURNAME_ATTRIBUTE))
-            writeStringAttributeSingleton(SURNAME_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(SERIAL_NUMBER_ATTRIBUTE))
-            writeStringAttributeSingleton(SERIAL_NUMBER_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(COUNTRY_NAME_ATTRIBUTE))
-            writeStringAttributeSingleton(COUNTRY_NAME_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(LOCALITY_NAME_ATTRIBUTE))
-            writeStringAttributeSingleton(LOCALITY_NAME_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(STATE_NAME_ATTRIBUTE))
-            writeStringAttributeSingleton(STATE_NAME_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(STREET_ADDRESS_ATTRIBUTE))
-            writeStringAttributeSingleton(STREET_ADDRESS_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(ORGANIZATION_NAME_ATTRIBUTE))
-            writeStringAttributeSingleton(ORGANIZATION_NAME_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(UNIT_NAME_ATTRIBUTE))
-            writeStringAttributeSingleton(UNIT_NAME_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(TITLE_ATTRIBUTE))
-            writeStringAttributeSingleton(TITLE_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(GIVEN_NAME_ATTRIBUTE))
-            writeStringAttributeSingleton(GIVEN_NAME_OBJECT_ID, attributeValue, false);
-          else if (attributeName.equals(EMAIL_ADDRESS_ATTRIBUTE))
-            writeStringAttributeSingleton(EMAIL_ADDRESS_OBJECT_ID, attributeValue, true);
+          switch (attributeName) {
+            case COMMON_NAME_ATTRIBUTE:
+            case COMMON_NAME_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(COMMON_NAME_OBJECT_ID, attributeValueString, false);
+              break;
+            case SURNAME_ATTRIBUTE:
+            case SURNAME_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(SURNAME_OBJECT_ID, attributeValueString, false);
+              break;
+            case COUNTRY_NAME_ATTRIBUTE:
+            case COUNTRY_NAME_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(COUNTRY_NAME_OBJECT_ID, attributeValueString, false);
+              break;
+            case LOCALITY_NAME_ATTRIBUTE:
+            case LOCALITY_NAME_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(LOCALITY_NAME_OBJECT_ID, attributeValueString, false);
+              break;
+            case STATE_NAME_ATTRIBUTE:
+            case STATE_NAME_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(STATE_NAME_OBJECT_ID, attributeValueString, false);
+              break;
+            case STREET_ADDRESS_ATTRIBUTE:
+            case STREET_ADDRESS_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(STREET_ADDRESS_OBJECT_ID, attributeValueString, false);
+              break;
+            case ORGANIZATION_NAME_ATTRIBUTE:
+            case ORGANIZATION_NAME_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(
+                  ORGANIZATION_NAME_OBJECT_ID, attributeValueString, false);
+              break;
+            case UNIT_NAME_ATTRIBUTE:
+            case UNIT_NAME_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(UNIT_NAME_OBJECT_ID, attributeValueString, false);
+              break;
+            case TITLE_ATTRIBUTE:
+            case TITLE_ATTRIBUTE_2:
+            case TITLE_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(TITLE_OBJECT_ID, attributeValueString, false);
+              break;
+            case SERIAL_NUMBER_ATTRIBUTE:
+            case SERIAL_NUMBER_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(SERIAL_NUMBER_OBJECT_ID, attributeValueString, false);
+              break;
+            case GIVEN_NAME_ATTRIBUTE:
+            case GIVEN_NAME_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(GIVEN_NAME_OBJECT_ID, attributeValueString, false);
+              break;
+            case EMAIL_ADDRESS_ATTRIBUTE:
+            case EMAIL_ADDRESS_OBJECT_ID_STRING:
+              writeStringAttributeSingleton(EMAIL_ADDRESS_OBJECT_ID, attributeValueString, true);
+              break;
+          }
         }
       } catch (InvalidNameException e) {
         throw new IOException("Failed to parse the issuer distinguished name", e);
@@ -274,8 +310,8 @@ class PKCS7OutputStream {
   }
 
   /**
-   * Writes a X.509 Relative-Distinguished-Name (RDN, a set of attributes), with the specified X.500
-   * Attribute-Value-Assertion (AVA, an attribute).
+   * Writes an X.509 Relative-Distinguished-Name (RDN, a set of attributes), with the specified
+   * X.500 Attribute-Value-Assertion (AVA, an attribute).
    */
   private void writeStringAttributeSingleton(
       byte[] attributeIdentifier, String attributeValue, boolean asIA5String) throws IOException {

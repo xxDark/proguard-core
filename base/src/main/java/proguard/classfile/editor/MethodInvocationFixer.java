@@ -25,6 +25,9 @@ import proguard.classfile.constant.visitor.ConstantVisitor;
 import proguard.classfile.instruction.*;
 import proguard.classfile.instruction.visitor.InstructionVisitor;
 import proguard.classfile.util.*;
+import proguard.classfile.visitor.MemberAccessFilter;
+import proguard.classfile.visitor.MemberCounter;
+import proguard.classfile.visitor.NamedMethodVisitor;
 
 /**
  * This {@link AttributeVisitor} fixes all inappropriate special/virtual/static/interface
@@ -134,10 +137,38 @@ public class MethodInvocationFixer
         if (opcode == Instruction.OP_INVOKESPECIAL
             && (referencedMethod.getAccessFlags() & AccessConstants.ABSTRACT) == 0) {
           // Explicit calls to default interface methods *must* be preserved.
+          return;
         }
-        // But is it not an interface invocation, or is the parameter
+
+        if (opcode == Instruction.OP_INVOKESPECIAL) {
+          MemberCounter defaultSuperInterfaceMethodCounter = new MemberCounter();
+          referencedClass.hierarchyAccept(
+              false,
+              false,
+              true,
+              false,
+              new NamedMethodVisitor(
+                  referencedMethod.getName(referencedMethodClass),
+                  referencedMethod.getDescriptor(referencedMethodClass),
+                  new MemberAccessFilter(
+                      0,
+                      AccessConstants.STATIC | AccessConstants.PRIVATE | AccessConstants.ABSTRACT,
+                      defaultSuperInterfaceMethodCounter)));
+          if (defaultSuperInterfaceMethodCounter.getCount() == 1) {
+            // We have to keep the invokespecial if a maximally-specific superinterface default
+            // method exists.
+            // If we don't, invokeinterface' lookup procedure will select the objectref's
+            // implementation, rather than a super's.
+            // See https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-5.html#jvms-5.4.3.3
+            // And
+            // https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html#jvms-6.5.invokespecial
+            return;
+          }
+        }
+
+        // Is it not an interface invocation, or is the parameter
         // size incorrect?
-        else if (opcode != Instruction.OP_INVOKEINTERFACE
+        if (opcode != Instruction.OP_INVOKEINTERFACE
             || constantInstruction.constant != invokeinterfaceConstant) {
           // Fix the parameter size of the interface invocation.
           Instruction replacementInstruction =

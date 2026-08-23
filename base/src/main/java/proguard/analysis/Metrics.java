@@ -22,7 +22,9 @@ public class Metrics {
     CALL_GRAPH_RECONSTRUCTION_MAX_WIDTH_REACHED,
     CONCRETE_CALL_NO_CODE_ATTRIBUTE,
     DEX2PRO_INVALID_INNER_CLASS,
-    DEX2PRO_UNPARSEABLE_METHOD_SKIPPED
+    DEX2PRO_UNPARSEABLE_METHOD_SKIPPED,
+    CALLGRAPHWALKER_MAX_DEPTH,
+    CALLGRAPHWALKER_MAX_WIDTH,
   }
 
   public static final Map<MetricType, Integer> counts =
@@ -30,6 +32,17 @@ public class Metrics {
 
   public static void increaseCount(MetricType type) {
     counts.merge(type, 1, Integer::sum);
+  }
+
+  /**
+   * Set the value of the metric to the given value if it's bigger than the current value.
+   *
+   * @param type the type of metric
+   * @param value the value to set
+   */
+  public static void setIfMax(MetricType type, int value) {
+    counts.compute(
+        type, (key, mappedValue) -> mappedValue == null ? value : Integer.max(mappedValue, value));
   }
 
   /** Get all collected data as a string and clear it afterwards. */

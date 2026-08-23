@@ -142,10 +142,18 @@ public class ReferenceTracingInvocationUnit extends SimplifiedInvocationUnit {
         invocationUnit.getMethodParameterValue(
             clazz, method, parameterIndex, type, referencedClass);
 
+    int initialized = Value.ALWAYS;
+
+    // If we're a constructor, the "instance" is not initialized at this point.
+    if (ClassConstants.METHOD_NAME_INIT.equals(method.getName(clazz)) && parameterIndex == 0) {
+      initialized = Value.NEVER;
+    }
+
     // We're attaching the parameter index as a trace value. It doesn't
     // take into account Category 2 values, so it is not compatible with
     // variable indices.
-    return trace(parameterValue, parameterIndex | InstructionOffsetValue.METHOD_PARAMETER);
+    return trace(
+        parameterValue, parameterIndex | InstructionOffsetValue.METHOD_PARAMETER, initialized);
   }
 
   @Override
@@ -217,14 +225,27 @@ public class ReferenceTracingInvocationUnit extends SimplifiedInvocationUnit {
    * result.
    */
   protected Value trace(Value value, int trace) {
+    return trace(value, trace, Value.ALWAYS);
+  }
+
+  /**
+   * Sets or replaces the trace value on a given value, if it's a reference value, returning the
+   * result.
+   */
+  protected Value trace(Value value, int trace, int initialized) {
     return (value != null && value.computationalType() == Value.TYPE_REFERENCE)
-        ? trace(value, new InstructionOffsetValue(trace))
+        ? trace(value, new InstructionOffsetValue(trace), initialized)
         : value;
   }
 
   /** Sets or replaces the trace value on a given value, returning the result. */
   protected Value trace(Value value, InstructionOffsetValue traceValue) {
-    return new TracedReferenceValue(untrace(value).referenceValue(), traceValue);
+    return trace(value, traceValue, Value.ALWAYS);
+  }
+
+  /** Sets or replaces the trace value on a given value, returning the result. */
+  protected Value trace(Value value, InstructionOffsetValue traceValue, int initialized) {
+    return new TracedReferenceValue(untrace(value).referenceValue(), traceValue, initialized);
   }
 
   /** Removes the trace value from a given value, if present, returning the result. */

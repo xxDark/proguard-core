@@ -29,32 +29,56 @@ import proguard.classfile.*;
 public class ClassAccessFilter implements ClassVisitor {
   private final int requiredSetAccessFlags;
   private final int requiredUnsetAccessFlags;
-  private final ClassVisitor classVisitor;
+  private final ClassVisitor acceptedClassVisitor;
+  private final ClassVisitor rejectedClassVisitor;
 
   /**
    * Creates a new ClassAccessFilter.
    *
    * @param requiredSetAccessFlags the class access flags that should be set.
    * @param requiredUnsetAccessFlags the class access flags that should be unset.
-   * @param classVisitor the <code>ClassVisitor</code> to which visits will be delegated.
+   * @param acceptedClassVisitor the <code>ClassVisitor</code> to which visits will be delegated.
+   * @param rejectedClassVisitor the <code>ClassVisitor</code> to which visits of classes that do
+   *     not have the proper flags will be delegated.
    */
   public ClassAccessFilter(
-      int requiredSetAccessFlags, int requiredUnsetAccessFlags, ClassVisitor classVisitor) {
+      int requiredSetAccessFlags,
+      int requiredUnsetAccessFlags,
+      ClassVisitor acceptedClassVisitor,
+      ClassVisitor rejectedClassVisitor) {
     this.requiredSetAccessFlags = requiredSetAccessFlags;
     this.requiredUnsetAccessFlags = requiredUnsetAccessFlags;
-    this.classVisitor = classVisitor;
+    this.acceptedClassVisitor = acceptedClassVisitor;
+    this.rejectedClassVisitor = rejectedClassVisitor;
+  }
+
+  /**
+   * Creates a new ClassAccessFilter.
+   *
+   * @param requiredSetAccessFlags the class access flags that should be set.
+   * @param requiredUnsetAccessFlags the class access flags that should be unset.
+   * @param acceptedClassVisitor the <code>ClassVisitor</code> to which visits will be delegated.
+   */
+  public ClassAccessFilter(
+      int requiredSetAccessFlags, int requiredUnsetAccessFlags, ClassVisitor acceptedClassVisitor) {
+    this(requiredSetAccessFlags, requiredUnsetAccessFlags, acceptedClassVisitor, null);
   }
 
   // Implementations for ClassVisitor.
 
   @Override
   public void visitAnyClass(Clazz clazz) {
-    if (accepted(clazz.getAccessFlags())) {
-      clazz.accept(classVisitor);
+    ClassVisitor delegateVisitor = getDelegateVisitor(clazz.getAccessFlags());
+    if (delegateVisitor != null) {
+      clazz.accept(delegateVisitor);
     }
   }
 
   // Small utility methods.
+
+  private ClassVisitor getDelegateVisitor(int accessFlags) {
+    return accepted(accessFlags) ? acceptedClassVisitor : rejectedClassVisitor;
+  }
 
   private boolean accepted(int accessFlags) {
     return (requiredSetAccessFlags & ~accessFlags) == 0

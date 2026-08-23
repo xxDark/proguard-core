@@ -61,6 +61,7 @@ public class BranchTargetFinder
   private static final short EXCEPTION_HANDLER = 1 << 8;
   private static final short SUBROUTINE_INVOCATION = 1 << 9;
   private static final short SUBROUTINE_RETURNING = 1 << 10;
+  private static final short FALLTHROUGH = 1 << 11;
 
   private short[] instructionMarks = new short[ClassEstimates.TYPICAL_CODE_LENGTH + 1];
   private int[] subroutineStarts = new int[ClassEstimates.TYPICAL_CODE_LENGTH];
@@ -237,6 +238,19 @@ public class BranchTargetFinder
    */
   public boolean containsSubroutines() {
     return containsSubroutines;
+  }
+
+  /** Return whether the instruction at the given offset is a conditional branch fall-through. */
+  public boolean isBranchFallThrough(int offset) {
+    return (instructionMarks[offset] & FALLTHROUGH) != 0;
+  }
+
+  /** Return whether the instruction at the given offset is a leader. */
+  public boolean isLeader(int offset) {
+    return offset == 0
+        || (instructionMarks[offset]
+                & (BRANCH_TARGET | AFTER_BRANCH | EXCEPTION_HANDLER | FALLTHROUGH))
+            != 0;
   }
 
   // Implementations for AttributeVisitor.
@@ -479,9 +493,14 @@ public class BranchTargetFinder
       markBranchSubroutineStart(offset, branchOffset, currentSubroutineStart);
     }
 
+    int nextOffset = offset + branchInstruction.length(offset);
+
+    // Mark the next instruction.
     if (opcode == Instruction.OP_GOTO || opcode == Instruction.OP_GOTO_W) {
-      // Mark the next instruction.
-      markAfterBranchOrigin(offset + branchInstruction.length(offset));
+      markAfterBranchOrigin(nextOffset);
+    } else {
+      // We're dealing with a branching instruction that has a fallthrough case.
+      markFallThrough(nextOffset);
     }
   }
 
@@ -597,6 +616,11 @@ public class BranchTargetFinder
 
     // Stop marking a subroutine.
     currentSubroutineStart = UNKNOWN;
+  }
+
+  /** Marks the instruction at the given offset as a conditional-branch fallthrough. */
+  private void markFallThrough(int offset) {
+    instructionMarks[offset] |= FALLTHROUGH;
   }
 
   /** Checks if the specified instruction is inside a subroutine. */

@@ -41,10 +41,8 @@ import proguard.evaluation.value.Value;
  * Represents a method call. If the call target is a {@link Method} that is present in the class
  * pool, a {@link ConcreteCall} is instantiated. If the call target is not a known method, a {@link
  * SymbolicCall} is the appropriate subclass.
- *
- * @author Samuel Hopstock
  */
-public abstract class Call {
+public abstract class Call implements Comparable<Call> {
 
   private static final Logger log = LogManager.getLogger(Call.class);
   /** The location where the call was invoked. */
@@ -230,6 +228,27 @@ public abstract class Call {
   }
 
   public void targetMethodAccept(MemberVisitor memberVisitor) {}
+
+  @Override
+  public int compareTo(Call other) {
+    int result = Byte.compare(instruction.opcode, other.instruction.opcode);
+    if (result != 0) {
+      return result;
+    }
+    result = Integer.compare(throwsNullptr, other.throwsNullptr);
+    if (result != 0) {
+      return result;
+    }
+    result = caller.compareTo(other.caller);
+    if (result != 0) {
+      return result;
+    }
+    result = getTarget().compareTo(other.getTarget());
+    if (result != 0) {
+      return result;
+    }
+    return getClass().getName().compareTo(other.getClass().getName());
+  }
 
   @Override
   public boolean equals(Object o) {

@@ -42,8 +42,10 @@ import proguard.classfile.MethodSignature;
 public class CallGraphWalker {
 
   private static final Logger log = LogManager.getLogger(CallGraphWalker.class);
+
   /** Call graph strands are no longer explored after a maximum distance from the original root. */
-  public static final int MAX_DEPTH_DEFAULT = 100;
+  @Deprecated public static final int MAX_DEPTH_DEFAULT = 100;
+
   /**
    * Once the call graph reaches a maximum width, no more nodes are added to the worklist of the
    * next level. E.g. suppose this limit is 5 and we have already discovered the following call
@@ -64,7 +66,7 @@ public class CallGraphWalker {
    * width 6, which is more than the 5 allowed nodes. Thus, <code>level1_1</code> is marked as
    * truncated and its other predecessors are discarded.
    */
-  public static final int MAX_WIDTH_DEFAULT = 100;
+  @Deprecated public static final int MAX_WIDTH_DEFAULT = 100;
 
   /**
    * Analogous to Soot's <code>getReachableMethods()</code>: Starting from one particular method,
@@ -99,6 +101,7 @@ public class CallGraphWalker {
    * @param start The method that is to be used as the exploration root
    * @return A set of all transitively reachable methods
    */
+  @Deprecated
   public static Set<MethodSignature> getSuccessors(CallGraph callGraph, MethodSignature start) {
     return getSuccessors(callGraph, start, MAX_DEPTH_DEFAULT, MAX_WIDTH_DEFAULT);
   }
@@ -136,6 +139,7 @@ public class CallGraphWalker {
    * @param start The method that is to be used as the exploration root
    * @return A set of all methods that can transitively reach the root
    */
+  @Deprecated
   public static Set<MethodSignature> getPredecessors(CallGraph callGraph, MethodSignature start) {
     return getPredecessors(callGraph, start, MAX_DEPTH_DEFAULT, MAX_WIDTH_DEFAULT);
   }
@@ -198,6 +202,7 @@ public class CallGraphWalker {
    *     false, this specific path is not explored any further, without marking it as truncated.
    * @return The {@link Node} representing the start method and all its successors
    */
+  @Deprecated
   public static Node successorPathsAccept(
       CallGraph callGraph, MethodSignature start, Predicate<Node> handler) {
     return successorPathsAccept(callGraph, start, handler, MAX_DEPTH_DEFAULT, MAX_WIDTH_DEFAULT);
@@ -238,6 +243,7 @@ public class CallGraphWalker {
    *     false, this specific path is not explored any further, without marking it as truncated.
    * @return The {@link Node} representing the start method and all its predecessors
    */
+  @Deprecated
   public static Node predecessorPathsAccept(
       CallGraph callGraph, MethodSignature start, Predicate<Node> handler) {
     return predecessorPathsAccept(callGraph, start, handler, MAX_DEPTH_DEFAULT, MAX_WIDTH_DEFAULT);
@@ -275,6 +281,7 @@ public class CallGraphWalker {
     worklist.add(root);
     int currLevel = 0;
     while (!worklist.isEmpty()) {
+      Metrics.setIfMax(MetricType.CALLGRAPHWALKER_MAX_DEPTH, currLevel);
       if (currLevel >= maxDepth) {
         Metrics.increaseCount(MetricType.CALL_GRAPH_RECONSTRUCTION_MAX_DEPTH_REACHED);
         worklist.forEach(n -> n.isTruncated = true);
@@ -317,6 +324,7 @@ public class CallGraphWalker {
       }
 
       for (Node next : getNext.apply(callGraph, curr)) {
+        Metrics.setIfMax(MetricType.CALLGRAPHWALKER_MAX_WIDTH, nextLevel.size());
         if (nextLevel.size() >= maxWidth) {
           Metrics.increaseCount(MetricType.CALL_GRAPH_RECONSTRUCTION_MAX_WIDTH_REACHED);
           next.isTruncated = true;

@@ -1,9 +1,8 @@
-## Version 9.3.3 
+## Version 9.4.0
 
-### Bugfixes
+### Java support 
 
-- Fix reference initialization for type aliases defined in file facades with a custom JvmPackageName.
-- Fix PKCS7OutputStream incorrectly handling escaped quotes certificates.
+- Support Java 27.
 
 ### Kotlin support
 
@@ -15,11 +14,25 @@
 - Add `KotlinAliasReferenceFixer` to update Kotlin type alias references (`aliasName`) after their declaration container is renamed. Run it after `ClassReferenceFixer`.
 - `MemberRemover` will now throw an exception if you attempt to collect a member from a class for removal while you're still collecting members from another class. You must commit member removal for the current class before collecting members from another class.
 - `InitializerEditor.addStaticInitializerInstructions` returns the created or modified static initializer.
-
-### API changes
-
+- `ClassUtil` supports optionally quoting identifiers with spaces when converting names, types or descriptions from internal to external.
+- Avoid changing invokespecial to invokeinterface in `MethodInvocationFixer` when a default super interface method is present.
+- Add new `InterfaceMethodReferenceFixer` that patches `MethodRefConstant`s to `InterfaceMethodRefConstant`s in visited classes when the reference is an interface method.
 - Add `reset` method to `MemberRemover`.
 - Add processing flags helper methods to `Processable`.
+- Add `isLeader` and `isFallThrough` methods to the `BranchTargetFinder`. These methods can be used to determine if an offset is the leader of a basic block or the fallthrough of a conditional branch respectively.
+- Deprecate methods of `CallGraphWalker` using a default depth and width.
+
+### Improved
+
+- Improve performance of generalization steps in partial evaluation.
+- Improve `CallGraph` to store incoming and outgoing calls in a deterministic order.
+
+### Bugfixes
+
+- Fix reference initialization for type aliases defined in file facades with a custom JvmPackageName.
+- Fix PKCS7OutputStream incorrectly handling escaped quotes certificates.
+- Fix ReferenceTracingInvocationUnit treating the current reference inside constructors as initialized prior to the invocation of the super or object initializer.
+- Fix `NullPointerException` in `ClassReferenceFixer` for Kotlin coroutine suspend lambdas by resolving their `referencedMethod` to `invokeSuspend`.
 
 ## Version 9.3.2 
 
