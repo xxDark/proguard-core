@@ -45,8 +45,6 @@ public class SimpleCpa<StateT extends AbstractState<StateT>>
   /**
    * Create a simple CPA with a static precision adjustment.
    *
-   * @param abstractDomain a join-semilattice of {@link AbstractState}s defining the abstraction
-   *     level of the analysis
    * @param transferRelation a transfer relation specifying how successor states are computed
    * @param mergeOperator a merge operator defining how (and whether) the older {@link
    *     AbstractState} should be updated with the newly discovered {@link AbstractState}
@@ -68,8 +66,6 @@ public class SimpleCpa<StateT extends AbstractState<StateT>>
   /**
    * Create a simple CPA from {@link ConfigurableProgramAnalysis} components.
    *
-   * @param abstractDomain a join-semilattice of {@link AbstractState}s defining the abstraction
-   *     level of the analysis
    * @param transferRelation a transfer relation specifying how successor states are computed
    * @param mergeOperator a merge operator defining how (and whether) the older {@link
    *     AbstractState} should be updated with the newly discovered {@link AbstractState}

@@ -51,16 +51,15 @@ public class CallGraphWalker {
    * next level. E.g. suppose this limit is 5 and we have already discovered the following call
    * graph:
    *
-   * <pre>
-   *     <code>
-   *         level2_0 <-- level1_0 <-- root
-   *         level2_1 <------|          |
-   *         level2_2 <------|          |
-   *                                    |
-   *         level2_3 <-- level1_1 <----|
-   *         level2_4 <------|
-   *     </code>
-   * </pre>
+   * <pre>{@code
+   * level2_0 <-- level1_0 <-- root
+   * level2_1 <------|          |
+   * level2_2 <------|          |
+   *                            |
+   * level2_3 <-- level1_1 <----|
+   * level2_4 <------|
+   *
+   * }</pre>
    *
    * If <code>level1_1</code> has any more known predecessors, level 2 of the call graph would have
    * width 6, which is more than the 5 allowed nodes. Thus, <code>level1_1</code> is marked as
@@ -150,16 +149,15 @@ public class CallGraphWalker {
    * <p>Outgoing call graph edges are transitively visited, one level of the call graph at a time.
    * E.g. if we have the following graph:
    *
-   * <pre>
-   *     <code>
-   *         level2_0 <-- level1_0 <-- root
-   *         level2_1 <------|          |
-   *         level2_2 <------|          |
-   *                                    |
-   *         level2_3 <-- level1_1 <----|
-   *         level2_4 <------|
-   *     </code>
-   * </pre>
+   * <pre>{@code
+   * level2_0 <-- level1_0 <-- root
+   * level2_1 <------|          |
+   * level2_2 <------|          |
+   *                            |
+   * level2_3 <-- level1_1 <----|
+   * level2_4 <------|
+   *
+   * }</pre>
    *
    * In this case, <code>level1_0</code> and <code>level1_1</code> are visited first, then <code>
    * level2_*</code> and so on. The user of this method provides a callback that will be executed

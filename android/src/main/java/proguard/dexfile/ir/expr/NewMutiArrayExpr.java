@@ -34,7 +34,7 @@ public class NewMutiArrayExpr extends Value.EnExpr {
    *
    * <p>for baseType: I, dimension 4, the result type is int[][][][];
    *
-   * <p>NOTICE, not all dimension are init in ops, so ops.length <= dimension
+   * <p>NOTICE, not all dimension are init in ops, so {@code ops.length <= dimension}
    */
   public int dimension;
 

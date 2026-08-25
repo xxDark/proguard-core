@@ -60,8 +60,6 @@ public class CpaWithBamOperators<ContentT extends AbstractState<ContentT>>
   /**
    * Create a CPA with BAM operators from the abstract domain and the operators.
    *
-   * @param abstractDomain a join-semilattice of {@link AbstractState}s defining the abstraction
-   *     level of the analysis
    * @param transferRelation a transfer relation specifying how successor states are computed
    * @param merge a merge operator defining how (and whether) the older {@link AbstractState} should
    *     be updated with the newly discovered {@link AbstractState}

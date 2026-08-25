@@ -18,6 +18,7 @@
 package proguard.classfile.attribute.annotation;
 
 import proguard.classfile.*;
+import proguard.classfile.attribute.Attribute;
 import proguard.classfile.attribute.visitor.AttributeVisitor;
 
 /**
@@ -41,6 +42,7 @@ public class RuntimeInvisibleParameterAnnotationsAttribute extends ParameterAnno
 
   // Implementations for Attribute.
 
+  @Override
   public void accept(Clazz clazz, Method method, AttributeVisitor attributeVisitor) {
     attributeVisitor.visitRuntimeInvisibleParameterAnnotationsAttribute(clazz, method, this);
   }

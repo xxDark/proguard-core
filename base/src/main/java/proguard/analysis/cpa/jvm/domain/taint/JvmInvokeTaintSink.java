@@ -142,8 +142,6 @@ public class JvmInvokeTaintSink extends JvmTaintSink {
 
     /**
      * Create a new builder for {@link proguard.analysis.cpa.jvm.domain.taint.JvmInvokeTaintSink}.
-     *
-     * @param signature @param signature the signature of a sink method
      */
     public Builder(Signature signature) {
       this.signature = signature;

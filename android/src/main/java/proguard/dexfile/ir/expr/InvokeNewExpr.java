@@ -11,10 +11,11 @@ import proguard.dexfile.reader.Method;
  *
  * <p>It's possible that these are different:
  *
- * <p><code>
- *         new Foo <-- className
- *         invokespecial java/lang/Object <-- owner
- *     </code>
+ * <pre>{@code
+ * new Foo <-- className
+ * invokespecial java/lang/Object <-- owner
+ *
+ * }</pre>
  */
 public class InvokeNewExpr extends InvokeExpr {
   private final String className;

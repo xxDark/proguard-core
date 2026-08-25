@@ -652,8 +652,8 @@ public class ClassUtil {
   /**
    * Returns the internal class name for a given Class Signature.
    *
-   * @param classSignature the class signature, e.g. "<code>Lsome/package/Klass< T;>.Inner</code>"
-   * @return the internal class name, e.g. "<code>some/package/Klass$Inner</code>".
+   * @param classSignature the class signature, e.g. "{@code Lsome/package/Klass< T;>.Inner}"
+   * @return the internal class name, e.g. "{@code some/package/Klass$Inner}".
    */
   public static String internalClassNameFromClassSignature(String classSignature) {
     // Remove generic type information.
@@ -812,7 +812,7 @@ public class ClassUtil {
   /**
    * Returns whether the given method name refers to a class initializer or an instance initializer.
    *
-   * @param internalMethodName The internal method name, e.g. "<code>&ltclinit&gt;</code>".
+   * @param internalMethodName The internal method name, e.g. "<code>&lt;clinit&gt;</code>".
    * @return Whether the method name refers to an initializer, e.g. <code>true</code>.
    */
   public static boolean isInitializer(String internalMethodName) {
@@ -822,7 +822,7 @@ public class ClassUtil {
   /**
    * Returns whether the given method name refers to a class initializer.
    *
-   * @param internalMethodName The internal method name, e.g. "<code>&ltclinit&gt;</code>".
+   * @param internalMethodName The internal method name, e.g. "<code>&lt;clinit&gt;</code>".
    * @return Whether the method name refers to a class initializer, e.g. <code>true</code>.
    */
   public static boolean isClassInitializer(String internalMethodName) {
@@ -832,7 +832,7 @@ public class ClassUtil {
   /**
    * Returns whether the given method name refers to an instance initializer.
    *
-   * @param internalMethodName The internal method name, e.g. "<code>&ltinit&gt;</code>".
+   * @param internalMethodName The internal method name, e.g. "<code>&lt;init&gt;</code>".
    * @return Whether the method name refers to an instance initializer, e.g. <code>true</code>.
    */
   public static boolean isInstanceInitializer(String internalMethodName) {

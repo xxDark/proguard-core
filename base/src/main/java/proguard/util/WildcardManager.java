@@ -106,8 +106,8 @@ public class WildcardManager {
    * Creates new StringFunction that transforms the given expression with possible references to
    * wildcards, based on the list of string matchers.
    *
-   * <p>For example: "foo<1>" returns a string function that prepends "foo" to the first wildcard of
-   * the recently matched string.
+   * <p>For example: {@code "foo<1>"} returns a string function that prepends "foo" to the first
+   * wildcard of the recently matched string.
    */
   public StringFunction createMatchedStringFunction(String expression) {
     StringFunction stringFunction = null;
@@ -154,8 +154,8 @@ public class WildcardManager {
   /**
    * Parses a reference to a wildcard at a given index, if any.
    *
-   * <p>For example: "foo<1>" at index 0 returns -1, "foo<1>" at index 3 returns 0. "foo<8>" at
-   * index 3 returns 7.
+   * <p>For example: {@code "foo<1>"} at index 0 returns -1, {@code "foo<1>"} at index 3 returns 0.
+   * {@code "foo<8>"} at index 3 returns 7.
    *
    * @param regularExpression the regular expression.
    * @param index the index at which the regular expression is to be checked for a reference.

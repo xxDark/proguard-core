@@ -160,12 +160,13 @@ public class MethodSignature extends Signature implements MethodInfo {
   }
 
   /**
-   * Fuzzy check like {@link .matchesIgnoreNull(MethodSignature)} but allows dollar signs in type
-   * strings. Usually the notation for inner classes is {@code com/example/Foo$Bar}, but sometimes
-   * external systems call this class {@code com/example/Foo/Bar}. These two names correspond to the
-   * same class and thus should be treated as the same if they appear in a {@link MethodSignature}.
-   * If it is to be expected that this situation may occur, this method should be preferred over
-   * {@link .matchesIgnoreNull(MethodSignature)} to avoid false negatives.
+   * Fuzzy check like {@link #matchesIgnoreNull(MethodSignature, MethodSignature)} but allows dollar
+   * signs in type strings. Usually the notation for inner classes is {@code com/example/Foo$Bar},
+   * but sometimes external systems call this class {@code com/example/Foo/Bar}. These two names
+   * correspond to the same class and thus should be treated as the same if they appear in a {@link
+   * MethodSignature}. If it is to be expected that this situation may occur, this method should be
+   * preferred over {@link #matchesIgnoreNull(MethodSignature, MethodSignature)} to avoid false
+   * negatives.
    *
    * @param signature The {@link MethodSignature} to be compared
    * @param wildcard The {@link MethodSignature} pattern to be matched against

@@ -30,7 +30,10 @@ import proguard.dexfile.ir.expr.Value.E2Expr;
  * @see VT#DCMPG
  * @see VT#FCMPL
  * @see VT#DCMPL
- * @see VT#DIV
+ * @see VT#IDIV
+ * @see VT#LDIV
+ * @see VT#FDIV
+ * @see VT#DDIV
  * @see VT#EQ
  * @see VT#GE
  * @see VT#GT

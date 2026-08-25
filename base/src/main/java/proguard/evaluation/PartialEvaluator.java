@@ -284,7 +284,7 @@ public class PartialEvaluator implements AttributeVisitor, ExceptionInfoVisitor 
 
     /**
      * Specifies how many instructions should be considered in the context of a pretty message. When
-     * <= 0, no pretty printing is applied.
+     * {@code <= 0}, no pretty printing is applied.
      */
     public Builder setPrettyPrinting(int prettyInstructionBuffered) {
       this.prettyInstructionBuffered = prettyInstructionBuffered;
