@@ -73,6 +73,7 @@ allprojects { project ->
 		}
 		javadoc {
 			options.addStringOption('Xdoclint:none', '-quiet')
+			options.addBooleanOption('Xwerror', true)
 		}
 	}
 	tasks.withType(KotlinCompilationTask.class).configureEach {
