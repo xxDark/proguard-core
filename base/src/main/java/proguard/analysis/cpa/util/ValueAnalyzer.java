@@ -229,7 +229,7 @@ public class ValueAnalyzer {
      * <p>The default value is 10.
      *
      * @param maxCallStackDepth maximum depth of the call stack analyzed inter-procedurally. 0 means
-     *     intra-procedural analysis. < 0 means no maximum depth.
+     *     intra-procedural analysis. {@code < 0} means no maximum depth.
      * @return this {@link ValueAnalyzer} builder.
      */
     public Builder setMaxCallStackDepth(int maxCallStackDepth) {

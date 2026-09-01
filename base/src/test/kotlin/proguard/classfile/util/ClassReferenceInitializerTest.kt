@@ -451,6 +451,44 @@ class ClassReferenceInitializerTest : BehaviorSpec({
         }
     }
 
+    Given("An annotation on an enum entry") {
+        val (programClassPool, _) = ClassPoolBuilder.fromSource(
+            KotlinSource(
+                "MyAnnotation.kt",
+                """
+                    annotation class MyAnnotation()
+                """.trimIndent(),
+            ),
+            KotlinSource(
+                "Direction.kt",
+                """
+                    enum class Direction {
+                        @MyAnnotation
+                        NORTH,
+                        SOUTH;
+                    
+                        fun isVertical(): Boolean = this == NORTH || this == SOUTH
+                    }
+                """.trimIndent(),
+            ),
+        )
+        When("The ClassReferenceInitializer runs") {
+            programClassPool.classesAccept(
+                ClassReferenceInitializer(programClassPool, ClassPool()),
+            )
+        }
+        Then("The referenced annotation class should be initialized correctly") {
+            val DirectionEnumClass = programClassPool.getClass("Direction") as ProgramClass
+
+            (DirectionEnumClass.kotlinMetadata as KotlinClassKindMetadata).enumEntries.forEach {
+                it.annotations.forEach {
+                        arg ->
+                    arg.referencedAnnotationClass shouldNotBe null
+                }
+            }
+        }
+    }
+
     Given("A missing reference visitor") {
         val missingReferenceCrasher = object : InvalidReferenceVisitor {
             override fun visitMissingClass(referencingClazz: Clazz, reference: String) {

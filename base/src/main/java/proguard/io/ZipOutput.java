@@ -692,7 +692,7 @@ public class ZipOutput {
   /**
    * This output stream is mostly identical to DataOutputStream, except it stores the amount of
    * bytes written so far in a long instead of an int. This makes sure the count is correct, even
-   * when writing out more than 1 << 31 bytes.
+   * when writing out more than {@code 1 << 31 bytes}.
    */
   public static class LargeDataOutputStream extends DataOutputStream {
     private long written;

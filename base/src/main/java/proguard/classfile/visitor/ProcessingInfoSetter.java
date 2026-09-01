@@ -26,6 +26,7 @@ import proguard.classfile.attribute.preverification.visitor.*;
 import proguard.classfile.attribute.visitor.*;
 import proguard.classfile.constant.Constant;
 import proguard.classfile.constant.visitor.ConstantVisitor;
+import proguard.util.Processable;
 
 /**
  * This visitor sets a fixed info object on all the {@link Processable} instances that it visits.
@@ -59,42 +60,49 @@ public class ProcessingInfoSetter
 
   // Implementations for ClassVisitor.
 
+  @Override
   public void visitAnyClass(Clazz clazz) {
     clazz.setProcessingInfo(processingInfo);
   }
 
   // Implementations for ConstantVisitor.
 
+  @Override
   public void visitAnyConstant(Clazz clazz, Constant constant) {
     constant.setProcessingInfo(processingInfo);
   }
 
   // Implementations for MemberVisitor.
 
+  @Override
   public void visitAnyMember(Clazz clazz, Member member) {
     member.setProcessingInfo(processingInfo);
   }
 
   // Implementations for AttributeVisitor.
 
+  @Override
   public void visitAnyAttribute(Clazz clazz, Attribute attribute) {
     attribute.setProcessingInfo(processingInfo);
   }
 
   // Implementations for RecordComponentInfoVisitor.
 
+  @Override
   public void visitRecordComponentInfo(Clazz clazz, RecordComponentInfo recordComponentInfo) {
     recordComponentInfo.setProcessingInfo(processingInfo);
   }
 
   // Implementations for InnerClassesInfoVisitor.
 
+  @Override
   public void visitInnerClassesInfo(Clazz clazz, InnerClassesInfo innerClassesInfo) {
     innerClassesInfo.setProcessingInfo(processingInfo);
   }
 
   // Implementations for ExceptionInfoVisitor.
 
+  @Override
   public void visitExceptionInfo(
       Clazz clazz, Method method, CodeAttribute codeAttribute, ExceptionInfo exceptionInfo) {
     exceptionInfo.setProcessingInfo(processingInfo);
@@ -102,6 +110,7 @@ public class ProcessingInfoSetter
 
   // Implementations for StackMapFrameVisitor.
 
+  @Override
   public void visitAnyStackMapFrame(
       Clazz clazz,
       Method method,
@@ -113,6 +122,7 @@ public class ProcessingInfoSetter
 
   // Implementations for VerificationTypeVisitor.
 
+  @Override
   public void visitAnyVerificationType(
       Clazz clazz,
       Method method,
@@ -124,6 +134,7 @@ public class ProcessingInfoSetter
 
   // Implementations for LocalVariableInfoVisitor.
 
+  @Override
   public void visitLocalVariableInfo(
       Clazz clazz,
       Method method,
@@ -134,6 +145,7 @@ public class ProcessingInfoSetter
 
   // Implementations for LocalVariableTypeInfoVisitor.
 
+  @Override
   public void visitLocalVariableTypeInfo(
       Clazz clazz,
       Method method,
@@ -144,18 +156,21 @@ public class ProcessingInfoSetter
 
   // Implementations for AnnotationVisitor.
 
+  @Override
   public void visitAnnotation(Clazz clazz, Annotation annotation) {
     annotation.setProcessingInfo(processingInfo);
   }
 
   // Implementations for TypeAnnotationVisitor.
 
+  @Override
   public void visitTypeAnnotation(Clazz clazz, TypeAnnotation typeAnnotation) {
     typeAnnotation.setProcessingInfo(processingInfo);
   }
 
   // Implementations for ElementValueVisitor.
 
+  @Override
   public void visitAnyElementValue(Clazz clazz, Annotation annotation, ElementValue elementValue) {
     elementValue.setProcessingInfo(processingInfo);
   }

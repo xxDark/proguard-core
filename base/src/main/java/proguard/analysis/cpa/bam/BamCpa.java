@@ -79,7 +79,7 @@ public class BamCpa<ContentT extends AbstractState<ContentT>>
    * @param mainFunction the signature of a main function
    * @param cache a cache for the block abstractions
    * @param maxCallStackDepth maximum depth of the call stack analyzed inter-procedurally. 0 means
-   *     intra-procedural analysis. < 0 means no maximum depth.
+   *     intra-procedural analysis. {@code < 0} means no maximum depth.
    */
   public BamCpa(
       CpaWithBamOperators<ContentT> wrappedCpa,

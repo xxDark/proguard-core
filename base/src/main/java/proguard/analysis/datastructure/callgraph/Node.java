@@ -25,8 +25,8 @@ import proguard.classfile.MethodSignature;
 
 /**
  * Represents a node in a sub-callgraph, e.g. only the incoming or the outgoing callgraph for a
- * specific method. See {@link CallGraph#reconstructCallGraph(ClassPool, MethodSignature)} for more
- * details. The reconstruction process makes sure that there are no loops in the graph.
+ * specific method. See {@link CallGraph#reconstructCallGraph(ClassPool, MethodSignature, Set)} for
+ * more details. The reconstruction process makes sure that there are no loops in the graph.
  *
  * @author Samuel Hopstock
  */

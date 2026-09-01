@@ -18,9 +18,10 @@
 package proguard.classfile.attribute.module.visitor;
 
 import proguard.classfile.Clazz;
-import proguard.classfile.attribute.*;
+import proguard.classfile.attribute.Attribute;
+import proguard.classfile.attribute.module.ExportsInfo;
 import proguard.classfile.attribute.module.ModuleAttribute;
-import proguard.classfile.attribute.visitor.*;
+import proguard.classfile.attribute.visitor.AttributeVisitor;
 
 /**
  * This {@link AttributeVisitor} lets a given {@link ExportsInfoVisitor} visit all {@link
@@ -37,8 +38,10 @@ public class AllExportsInfoVisitor implements AttributeVisitor {
 
   // Implementations for AttributeVisitor.
 
+  @Override
   public void visitAnyAttribute(Clazz clazz, Attribute attribute) {}
 
+  @Override
   public void visitModuleAttribute(Clazz clazz, ModuleAttribute moduleAttribute) {
     moduleAttribute.exportsAccept(clazz, exportsInfoVisitor);
   }

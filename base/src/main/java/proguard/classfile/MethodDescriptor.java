@@ -94,7 +94,7 @@ public class MethodDescriptor {
   }
 
   /**
-   * Analogous to {@link MethodSignature.matchesIgnoreNull(MethodSignature, MethodSignature)}.
+   * Analogous to {@link MethodSignature#matchesIgnoreNull(MethodSignature, MethodSignature)}.
    *
    * @param descriptor The {@link MethodDescriptor} to be compared
    * @param wildcard The {@link MethodDescriptor} pattern to be matched against
@@ -111,7 +111,7 @@ public class MethodDescriptor {
   }
 
   /**
-   * Analogous to {@link MethodSignature.matchesIgnoreNullAndDollar(MethodSignature,
+   * Analogous to {@link MethodSignature#matchesIgnoreNullAndDollar(MethodSignature,
    * MethodSignature)}.
    *
    * @param descriptor The {@link MethodDescriptor} to be compared
